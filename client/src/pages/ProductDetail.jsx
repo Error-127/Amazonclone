@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { CartCountContext } from '../context/CartCountContext.jsx';
 import { addToCart, getCart } from '../cartService';
+import { API_BASE_URL } from '../config'; // 👈 Step 1: Import your live Render URL (using '../' to step out of the pages folder)
 
 function ProductDetail() {
   const { id } = useParams();
@@ -18,7 +19,8 @@ function ProductDetail() {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/products/${id}`);
+        // Step 2: Use API_BASE_URL instead of the old localhost link
+        const res = await axios.get(`${API_BASE_URL}/products/${id}`);
         setProduct(res.data);
       } catch (err) {
         console.error("Error fetching product specifications:", err);

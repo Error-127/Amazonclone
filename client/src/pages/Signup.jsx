@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config'; // 👈 Step 1: Import your live Render URL from config.js
 
 function Signup() {
   const [name, setName] = useState('');
@@ -17,7 +18,8 @@ function Signup() {
 
     const signupData = { name, email, password };
 
-    axios.post('http://localhost:5000/signup', signupData)
+    // Step 2: Swap out localhost with your live API_BASE_URL variable
+    axios.post(`${API_BASE_URL}/signup`, signupData)
       .then((response) => {
         setLoading(false);
         alert('Account Created Successfully! 🎉 Please sign in.');

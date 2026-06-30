@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config'; // 👈 Step 1: Import your live Render URL from config.js
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -12,11 +13,12 @@ function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    loading || setLoading(true);
 
     const loginData = { email, password };
 
-    axios.post('http://localhost:5000/login', loginData)
+    // Step 2: Swap out localhost with your live API_BASE_URL variable
+    axios.post(`${API_BASE_URL}/login`, loginData)
       .then((response) => {
         setLoading(false);
         if (response.data.token) {

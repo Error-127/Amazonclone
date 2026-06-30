@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from './config'; // 👈 Step 1: Import your live Render URL from config.js
 
-const API_URL = 'http://localhost:5000';
+// Step 2: Use the live URL variable instead of the old localhost string
+const API_URL = API_BASE_URL; 
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
