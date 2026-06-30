@@ -29,21 +29,22 @@ function Navbar() {
       
       {/* LEFT SIDE: LOGO */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Link to="/" style={{ color: '#ffffff', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold' }}>
+        <Link to="/" style={{ color: '#ffffff', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer' }}>
           amazon<span style={{ color: '#febd69' }}>.clone</span>
         </Link>
       </div>
 
-      {/* RIGHT SIDE: CONTROLS (Search is removed from here) */}
+      {/* RIGHT SIDE: CONTROLS */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
         
         <Link 
           to="/" 
-          style={{ color: '#ffffff', textDecoration: 'none', fontSize: '14px', fontWeight: '500' }}
+          style={{ color: '#ffffff', textDecoration: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}
         >
           Home
         </Link>
 
+        {/* 🛒 FIXED: Added explicit pointer cursor rules to guarantee click capture */}
         <Link 
           to="/cart" 
           style={{ 
@@ -53,10 +54,11 @@ function Navbar() {
             fontWeight: '700', 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '5px' 
+            gap: '5px',
+            cursor: 'pointer' 
           }}
         >
-          🛒 Cart <span style={{ color: '#febd69', fontSize: '15px' }}>({cartCount})</span>
+          🛒 Cart <span style={{ color: '#febd69', fontSize: '15px' }}>({cartCount || 0})</span>
         </Link>
 
         {isLoggedIn ? (
@@ -90,7 +92,8 @@ function Navbar() {
               fontWeight: '500',
               fontSize: '13px',
               border: '1px solid #fcd200',
-              display: 'inline-block'
+              display: 'inline-block',
+              cursor: 'pointer'
             }}
             onMouseOver={(e) => e.target.style.background = '#f7ca00'}
             onMouseOut={(e) => e.target.style.background = '#ffd814'}

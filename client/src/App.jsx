@@ -6,7 +6,6 @@ import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Cart from './pages/Cart.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
-// 1. Import your newly built Checkout page component
 import Checkout from './pages/Checkout.jsx'; 
 
 import { CartCountProvider } from './context/CartCountContext.jsx'; 
@@ -15,6 +14,7 @@ function App() {
   return (
     <CartCountProvider>
       <Router>
+        {/* The Navbar stays visible on top across every single application view */}
         <Navbar /> 
         <Routes>
           <Route path="/" element={<Home />} />
@@ -22,11 +22,11 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products/:id" element={<ProductDetail />} />
-          
-          {/* 2. Add your new Checkout route handler right here */}
           <Route path="/checkout" element={<Checkout />} />
           
+          {/* Catch-all safety fallback: Redirects any typos instantly back home */}
           <Route path="/home" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </CartCountProvider>
