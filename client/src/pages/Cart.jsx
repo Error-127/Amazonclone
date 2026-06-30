@@ -1,249 +1,293 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import { getCart, updateQuantity, removeFromCart } from '../cartService';
-import { CartCountContext } from '../context/CartCountContext.jsx'; 
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { API_BASE_URL } from '../config'; // 👈 Step 1: Import your live Render URL from config.js
 
-function Cart() {
-  const [cartItems, setCartItems] = useState([]);
+function Home() {
+  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  
+  // States to handle your search values and filter results locally
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  
   const [loading, setLoading] = useState(true);
-  const [processingId, setProcessingId] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-  const navigate = useNavigate(); 
-  const { setCartCount } = useContext(CartCountContext);
-
+  // Fetch Products from Backend API
   useEffect(() => {
-    loadCartData();
+    const fetchProducts = async () => {
+      try {
+        // Step 2: Swap out the old localhost string with your cloud variable
+        const res = await axios.get(`${API_BASE_URL}/products`);
+        const data = res.data || [];
+        setProducts(data);
+        setFilteredProducts(data); 
+      } catch (err) {
+        console.error("Error loading home inventory:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
   }, []);
 
-  const loadCartData = async () => {
-    try {
-      const data = await getCart();
-      const itemsList = data.items || [];
-      setCartItems(itemsList);
-      setCartCount(itemsList.reduce((acc, item) => acc + item.quantity, 0));
-    } catch (err) {
-      console.error("Failed to load cart elements", err);
-    } finally {
-      setLoading(false);
+  // Create a dynamic list of 5 slides from your database inventory
+  const carouselSlides = products.slice(0, 5).map((product) => ({
+    id: product._id || product.id,
+    image: product.image || product.thumbnail,
+    title: product.title,
+    subtitle: `Limited Time Offer — Grab yours today!`
+  }));
+
+  // Auto-advance Carousel Effect (Transitions every 4 seconds)
+  useEffect(() => {
+    if (carouselSlides.length === 0) return;
+    
+    const slideTimer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
+    }, 4000);
+    return () => clearInterval(slideTimer);
+  }, [carouselSlides.length]);
+
+  const nextSlide = () => {
+    if (carouselSlides.length > 0) {
+      setCurrentSlide((currentSlide + 1) % carouselSlides.length);
+    }
+  };
+  
+  const prevSlide = () => {
+    if (carouselSlides.length > 0) {
+      setCurrentSlide((currentSlide - 1 + carouselSlides.length) % carouselSlides.length);
     }
   };
 
-  const handleQtyChange = async (productId, currentQty, amount) => {
-    const newQty = currentQty + amount;
-    setProcessingId(productId);
+  // Real-time search handler function matching titles/descriptions
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
 
-    try {
-      if (newQty < 1) {
-        const updatedCart = await removeFromCart(productId);
-        const newItems = updatedCart.items || [];
-        setCartItems(newItems);
-        setCartCount(newItems.reduce((acc, item) => acc + item.quantity, 0));
-      } else {
-        const updatedCart = await updateQuantity(productId, newQty);
-        const newItems = updatedCart.items || [];
-        setCartItems(newItems);
-        setCartCount(newItems.reduce((acc, item) => acc + item.quantity, 0));
-      }
-    } catch (err) {
-      alert("Failed to update item count");
-    } finally {
-      setProcessingId(null);
+    if (query.trim() === '') {
+      setFilteredProducts(products);
+    } else {
+      const lowerCaseQuery = query.toLowerCase();
+      const filtered = products.filter(product => 
+        product.title?.toLowerCase().includes(lowerCaseQuery) ||
+        product.description?.toLowerCase().includes(lowerCaseQuery) ||
+        product.category?.toLowerCase().includes(lowerCaseQuery)
+      );
+      setFilteredProducts(filtered);
     }
   };
 
-  const handleRemove = async (productId) => {
-    try {
-      const updatedCart = await removeFromCart(productId);
-      const newItems = updatedCart.items || [];
-      setCartItems(newItems);
-      setCartCount(newItems.reduce((acc, item) => acc + item.quantity, 0));
-    } catch (err) {
-      alert("Failed to remove item");
-    }
-  };
-
-  const totalPrice = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-
-  if (loading) return <div style={{ padding: '60px', textAlign: 'center', fontSize: '18px' }}>Loading your cart... ⏳</div>;
+  if (loading) return <div style={{ padding: '60px', textAlign: 'center', fontSize: '18px' }}>Loading Amazon Dashboard... ⏳</div>;
 
   return (
-    <div style={{ background: '#eaeded', minHeight: '100vh', fontFamily: 'Arial, sans-serif', padding: '30px 20px' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '20px', flexWrap: 'wrap-reverse' }}>
-        
-        {/* LEFT COLUMN: PRODUCT LISTING */}
-        <div style={{ flex: '3 1 800px', background: '#ffffff', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ margin: '0 0 4px 0', fontSize: '26px', fontWeight: '500', color: '#111' }}>Shopping Cart</h2>
-          <span style={{ color: '#007185', fontSize: '14px', cursor: 'pointer' }} onClick={() => navigate('/')}>Deselect all items</span>
-          <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '16px 0' }} />
+    <div style={{ background: '#eaeded', minHeight: '100vh', fontFamily: 'Arial, sans-serif', paddingBottom: '40px' }}>
+      
+      {/* 1. LIGHT BLUE GRADIENT CAROUSEL HERO */}
+      {carouselSlides.length > 0 && (
+        <div style={{ 
+          position: 'relative', 
+          width: '100%', 
+          height: '420px', 
+          overflow: 'hidden', 
+          background: 'linear-gradient(to bottom, #e3f2fd, #bbdefb)', 
+          borderBottom: '1px solid #90caf9'
+        }}>
           
-          {cartItems.length === 0 ? (
-            <div style={{ padding: '40px 0', textAlign: 'center' }}>
-              <h3 style={{ color: '#565959', fontWeight: 'normal' }}>Your Amazon Cart is empty.</h3>
-              <button onClick={() => navigate('/')} style={{ marginTop: '15px', padding: '10px 20px', background: '#ffd814', border: '1px solid #fcd200', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Shop Products Now</button>
+          {/* Navigation Buttons */}
+          <button onClick={prevSlide} style={{ position: 'absolute', left: '20px', top: '45%', zIndex: 10, background: 'rgba(255,255,255,0.7)', color: '#004b87', border: '1px solid #90caf9', borderRadius: '50%', width: '45px', height: '45px', fontSize: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>‹</button>
+          <button onClick={nextSlide} style={{ position: 'absolute', right: '20px', top: '45%', zIndex: 10, background: 'rgba(255,255,255,0.7)', color: '#004b87', border: '1px solid #90caf9', borderRadius: '50%', width: '45px', height: '45px', fontSize: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>›</button>
+
+          {/* Carousel Active Slide Content Link */}
+          <div 
+            onClick={() => navigate(`/products/${carouselSlides[currentSlide].id}`)}
+            style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '10px 0' }}
+          >
+            {/* Main Product Image */}
+            <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+              <img 
+                src={carouselSlides[currentSlide].image} 
+                alt={carouselSlides[currentSlide].title}
+                style={{ maxHeight: '100%', maxWidth: '90%', objectFit: 'contain', filter: 'drop-shadow(0px 4px 8px rgba(0,0,0,0.12))' }}
+              />
             </div>
-          ) : (
-            cartItems.map(item => (
+            
+            {/* Clear, Crisp Text Overlay Banner */}
+            <div style={{
+              width: '85%',
+              maxWidth: '800px',
+              background: '#ffffff',
+              padding: '15px 25px',
+              borderRadius: '8px',
+              borderTop: '4px solid #007185',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              textAlign: 'center',
+              marginTop: '15px'
+            }}>
+              <h2 style={{ 
+                margin: 0, 
+                fontSize: '18px', 
+                fontWeight: 'bold', 
+                color: '#111111',
+                whiteSpace: 'nowrap', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis' 
+              }}>
+                {carouselSlides[currentSlide].title}
+              </h2>
+              <p style={{ 
+                margin: '5px 0 0 0', 
+                color: '#b12704',
+                fontSize: '14px',
+                fontWeight: 'bold' 
+              }}>
+                {carouselSlides[currentSlide].subtitle}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. DYNAMIC CONTENT CARD CONTAINERS */}
+      <div style={{ maxWidth: '1400px', margin: '30px auto 0 auto', padding: '0 20px', position: 'relative', zIndex: 5 }}>
+        
+        {/* 🔍 INJECTED SEARCH BAR FIELD */}
+        <div style={{ maxWidth: '100%', margin: '0 auto 25px auto', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', width: '100%', maxWidth: '650px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+            <input 
+              type="text" 
+              placeholder="Search catalog products right here..." 
+              value={searchQuery}
+              onChange={handleSearchChange}
+              style={{
+                width: '100%',
+                padding: '12px 20px',
+                fontSize: '15px',
+                border: '1px solid #cccccc',
+                borderRight: 'none',
+                borderRadius: '4px 0 0 4px',
+                outline: 'none',
+                height: '46px',
+                boxSizing: 'border-box'
+              }}
+            />
+            <div style={{
+              background: '#febd69',
+              padding: '0 22px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '46px',
+              boxSizing: 'border-box',
+              fontSize: '16px',
+              border: '1px solid #cccccc',
+              borderLeft: 'none'
+            }}>
+              🔍
+            </div>
+          </div>
+        </div>
+
+        <h3 style={{
+          background: '#fff',
+          padding: '15px 25px',
+          margin: '0 0 20px 0',
+          borderRadius: '4px',
+          fontSize: '22px',
+          fontWeight: 'bold',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          Featured Department Products
+        </h3>
+
+        {/* Grid System maps through filteredProducts */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '20px'
+        }}>
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map(product => (
               <div 
-                key={item.productId} 
-                style={{ 
-                  display: 'flex', 
-                  gap: '20px', 
-                  padding: '20px 0', 
-                  borderBottom: '1px solid #f0f2f5', 
-                  alignItems: 'flex-start', 
-                  opacity: processingId === item.productId ? 0.5 : 1,
-                  flexWrap: 'wrap'
+                key={product._id || product.id}
+                onClick={() => navigate(`/products/${product._id || product.id}`)}
+                style={{
+                  background: '#ffffff',
+                  padding: '20px',
+                  borderRadius: '4px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                 }}
               >
-                {/* Product Image Wrapper */}
-                <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#f7f7f7', borderRadius: '6px', padding: '5px' }}>
-                  <img src={item.image} alt={item.title} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                <div style={{ width: '100%', height: '200px', background: '#f7f7f7', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', marginBottom: '15px', overflow: 'hidden' }}>
+                  <img 
+                    src={product.image || product.thumbnail} 
+                    alt={product.title} 
+                    style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                  />
                 </div>
-                
-                {/* Left-Aligned Information Panel */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '500', color: '#007185', lineHeight: '1.3' }}>
-                    {item.title}
-                  </h4>
-                  
-                  {/* Decorative Brand Text */}
-                  <div style={{ fontSize: '13px', color: '#565959', marginBottom: '8px' }}>by Premium Brand</div>
-                  
-                  {/* Colorful Element 1: Orange Best Seller Badge */}
-                  <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ background: '#c45500', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '2px' }}>
-                      #1 Best Seller
-                    </span>
-                    <span style={{ color: '#565959', fontSize: '13px' }}>in Department Items</span>
+
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 5px 0', fontSize: '15px', fontWeight: 'bold', color: '#111', lineHeight: '1.4', height: '42px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {product.title}
+                    </h4>
+                    <p style={{ margin: '0 0 10px 0', color: '#007185', fontSize: '13px' }}>★ ★ ★ ★ ☆</p>
                   </div>
 
-                  {/* Standard Price */}
-                  <div style={{ fontSize: '19px', fontWeight: 'bold', color: '#111111', marginBottom: '4px' }}>
-                    ₹{item.price?.toLocaleString('en-IN')}
-                  </div>
-
-                  {/* Colorful Element 2: In Stock & Fast Shipping Tags */}
-                  <div style={{ fontSize: '13px', color: '#007600', fontWeight: 'bold', marginBottom: '2px' }}>In stock</div>
-                  <div style={{ fontSize: '13px', color: '#565959', marginBottom: '15px' }}>
-                    <span style={{ color: '#111', fontWeight: 'bold' }}>FREE delivery</span> Wednesday, 24 Jun
-                  </div>
-                  
-                  {/* Interactive Control Row */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
-                    
-                    {/* Custom Pill Quantity Selector Container */}
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      border: '1px solid #d5d9d9', 
-                      borderRadius: '20px', 
-                      background: '#f0f2f2', 
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                      overflow: 'hidden'
-                    }}>
-                      <button 
-                        disabled={processingId === item.productId}
-                        onClick={() => handleQtyChange(item.productId, item.quantity, -1)} 
-                        style={{ background: 'none', border: 'none', padding: '6px 14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
-                        onMouseOver={(e) => e.target.style.background = '#e3e6e6'}
-                        onMouseOut={(e) => e.target.style.background = 'none'}
-                      >-</button>
-                      <span style={{ minWidth: '24px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold', color: '#0f1111' }}>{item.quantity}</span>
-                      <button 
-                        disabled={processingId === item.productId}
-                        onClick={() => handleQtyChange(item.productId, item.quantity, 1)} 
-                        style={{ background: 'none', border: 'none', padding: '6px 14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
-                        onMouseOver={(e) => e.target.style.background = '#e3e6e6'}
-                        onMouseOut={(e) => e.target.style.background = 'none'}
-                      >+</button>
+                  <div>
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#B12704', marginBottom: '15px' }}>
+                      ₹{product.price ? Number(product.price).toLocaleString('en-IN') : '0'}
                     </div>
                     
-                    <span style={{ color: '#d5d9d9' }}>|</span>
-
-                    <button 
-                      onClick={() => handleRemove(item.productId)} 
-                      style={{ color: '#007185', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px' }}
-                      onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
-                      onMouseOut={(e) => e.target.style.textDecoration = 'none'}
-                    >
-                      Delete
-                    </button>
-
-                    <span style={{ color: '#d5d9d9' }}>|</span>
-
-                    <button style={{ color: '#007185', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px' }}>
-                      Save for later
+                    <button style={{
+                      width: '100%',
+                      padding: '8px 0',
+                      background: '#ffd814',
+                      border: '1px solid #fcd200',
+                      borderRadius: '20px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      fontSize: '13px'
+                    }}>
+                      View Details
                     </button>
                   </div>
                 </div>
+
               </div>
             ))
-          )}
-        </div>
-
-        {/* RIGHT COLUMN: CHECKOUT SUMMARY SUMMARY CARD */}
-        <div style={{ flex: '1 1 350px', height: 'fit-content', background: '#ffffff', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', textAlign: 'left' }}>
-          {cartItems.length > 0 ? (
-            <>
-              <div style={{ fontSize: '19px', color: '#111', marginBottom: '20px', lineHeight: '1.4' }}>
-                Subtotal ({cartItems.reduce((acc, i) => acc + i.quantity, 0)} items):{' '}
-                <strong style={{ fontWeight: '700', color: '#b12704', fontSize: '22px', display: 'block', marginTop: '5px' }}>
-                  ₹{totalPrice.toLocaleString('en-IN')}
-                </strong>
-              </div>
-              
-              {/* Colorful Element 3: Bold Rounded Amber Button Wrapper */}
-              <button 
-                onClick={() => navigate('/checkout')}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 0', 
-                  background: '#ffd814', 
-                  border: '1px solid #fcd200', 
-                  borderRadius: '20px', 
-                  cursor: 'pointer', 
-                  fontWeight: '500', 
-                  fontSize: '15px',
-                  color: '#0f1111',
-                  boxShadow: '0 2px 5px rgba(213,217,217,.5)',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.background = '#f7ca00'}
-                onMouseOut={(e) => e.target.style.background = '#ffd814'}
-              >
-                Proceed to Buy
-              </button>
-            </>
           ) : (
-            <>
-              <div style={{ fontSize: '18px', color: '#565959', marginBottom: '20px' }}>
-                Subtotal (0 items):
-                <strong style={{ display: 'block', color: '#aaa', fontSize: '22px', marginTop: '5px' }}>₹0</strong>
-              </div>
-              
-              <button 
-                disabled={true}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 0', 
-                  background: '#e7e9ec', 
-                  color: '#8d9096', 
-                  border: '1px solid #d5d9d9', 
-                  borderRadius: '20px', 
-                  cursor: 'not-allowed', 
-                  fontSize: '15px',
-                  fontWeight: '500'
-                }}
-              >
-                Cart is Empty
-              </button>
-            </>
+            <div style={{ 
+              gridColumn: '1 / -1', 
+              textAlign: 'center', 
+              padding: '40px', 
+              background: '#ffffff',
+              borderRadius: '4px',
+              color: '#565959',
+              fontSize: '16px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            }}>
+              No matching products found for "{searchQuery}".
+            </div>
           )}
         </div>
-        
       </div>
     </div>
   );
 }
 
-export default Cart;
+export default Home;
