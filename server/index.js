@@ -17,7 +17,11 @@ import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://amazonclone-two-alpha.vercel.app'],
+  origin: [
+    'http://localhost:5173', 
+    'https://amazonclone-two-alpha.vercel.app',
+    'https://amazonclone-two-alpha.vercel.app/' // Added variant with trailing slash just in case
+  ],
   credentials: true
 }));
 app.use(express.json());

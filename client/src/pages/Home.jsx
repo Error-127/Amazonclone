@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../config'; // 👈 Step 1: Import your live Render URL from your config file
 
 function Home() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   
-  // 1. ADDED: States to handle your search values and filter results locally
+  // States to handle your search values and filter results locally
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -17,10 +18,11 @@ function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/products');
+        // Step 2: Swap out 'http://localhost:5000' with your global cloud variable
+        const res = await axios.get(`${API_BASE_URL}/products`);
         const data = res.data || [];
         setProducts(data);
-        setFilteredProducts(data); // 2. FIXED: Sets default inventory array for display
+        setFilteredProducts(data); 
       } catch (err) {
         console.error("Error loading home inventory:", err);
       } finally {
@@ -60,7 +62,7 @@ function Home() {
     }
   };
 
-  // 3. ADDED: Real-time search handler function matching titles/descriptions
+  // Real-time search handler function matching titles/descriptions
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -151,7 +153,7 @@ function Home() {
       {/* 2. DYNAMIC CONTENT CARD CONTAINERS */}
       <div style={{ maxWidth: '1400px', margin: '30px auto 0 auto', padding: '0 20px', position: 'relative', zIndex: 5 }}>
         
-        {/* 🔍 4. INJECTED SEARCH BAR FIELD (Directly above items header) */}
+        {/* Search Bar Field */}
         <div style={{ maxWidth: '100%', margin: '0 auto 25px auto', display: 'flex', justifyContent: 'center' }}>
           <div style={{ display: 'flex', width: '100%', maxWidth: '650px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
             <input 
@@ -200,7 +202,7 @@ function Home() {
           Featured Department Products
         </h3>
 
-        {/* 5. REFACTORED: Grid System maps through filteredProducts instead of global arrays */}
+        {/* Grid System maps through filteredProducts */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -269,7 +271,6 @@ function Home() {
               </div>
             ))
           ) : (
-            // Formats empty lookup query notifications safely inside grid boundaries
             <div style={{ 
               gridColumn: '1 / -1', 
               textAlign: 'center', 
