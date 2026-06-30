@@ -1,0 +1,25 @@
+# Dependency Directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment Secrets / API Keys
+.env
+.env.local
+.env.*.local
+server/.env
+client/.env
+
+# Production Build Outputs
+dist/
+client/dist/
+build/
+.vercel/
+
+# Operating System & IDE Garbage
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+npm-debug.log*
