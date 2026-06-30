@@ -16,7 +16,10 @@ import Cart from './models/cart.js';
 import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://amazonclone-two-alpha.vercel.app'],
+  credentials: true
+}));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
