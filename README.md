@@ -4,7 +4,6 @@ A full-stack e-commerce platform built with React, Node.js, Express, and MongoDB
 
 ## 🚀 Live Demo
 * **Frontend (Vercel):** [https://amazonclone-two-alpha.vercel.app](https://amazonclone-two-alpha.vercel.app)
-* **Backend API (Render):** [https://amazonclone-5h3n.onrender.com](https://amazonclone-5h3n.onrender.com)
 
 ---
 
