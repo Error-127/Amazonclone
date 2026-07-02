@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { API_BASE_URL } from '../config'; // 👈 Step 1: Import your live Render URL from your config file
+import { API_BASE_URL } from '../config'; // Import live Render URL from config file
 
 function Home() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   
-  // States to handle your search values and filter results locally
+  // States to handle search values and filter results locally
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -18,7 +18,6 @@ function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Step 2: Swap out 'http://localhost:5000' with your global cloud variable
         const res = await axios.get(`${API_BASE_URL}/products`);
         const data = res.data || [];
         setProducts(data);
@@ -85,50 +84,53 @@ function Home() {
   return (
     <div style={{ background: '#eaeded', minHeight: '100vh', fontFamily: 'Arial, sans-serif', paddingBottom: '40px' }}>
       
-      {/* 1. LIGHT BLUE GRADIENT CAROUSEL HERO */}
+      {/* 1. FIXED LOGIC: RESIZABLE FLUID CAROUSEL HERO */}
       {carouselSlides.length > 0 && (
         <div style={{ 
           position: 'relative', 
           width: '100%', 
-          height: '420px', 
+          minHeight: '260px',
+          height: 'auto', // 👈 Allows the hero block to shrink or stretch depending on screen sizes
+          padding: '20px 0',
           overflow: 'hidden', 
           background: 'linear-gradient(to bottom, #e3f2fd, #bbdefb)', 
           borderBottom: '1px solid #90caf9'
         }}>
           
           {/* Navigation Buttons */}
-          <button onClick={prevSlide} style={{ position: 'absolute', left: '20px', top: '45%', zIndex: 10, background: 'rgba(255,255,255,0.7)', color: '#004b87', border: '1px solid #90caf9', borderRadius: '50%', width: '45px', height: '45px', fontSize: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>‹</button>
-          <button onClick={nextSlide} style={{ position: 'absolute', right: '20px', top: '45%', zIndex: 10, background: 'rgba(255,255,255,0.7)', color: '#004b87', border: '1px solid #90caf9', borderRadius: '50%', width: '45px', height: '45px', fontSize: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>›</button>
+          <button onClick={prevSlide} style={{ position: 'absolute', left: '10px', top: '40%', zIndex: 10, background: 'rgba(255,255,255,0.7)', color: '#004b87', border: '1px solid #90caf9', borderRadius: '50%', width: '40px', height: '40px', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>‹</button>
+          <button onClick={nextSlide} style={{ position: 'absolute', right: '10px', top: '40%', zIndex: 10, background: 'rgba(255,255,255,0.7)', color: '#004b87', border: '1px solid #90caf9', borderRadius: '50%', width: '40px', height: '40px', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>›</button>
 
           {/* Carousel Active Slide Content Link */}
           <div 
             onClick={() => navigate(`/products/${carouselSlides[currentSlide].id}`)}
             style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '10px 0' }}
           >
-            {/* Main Product Image */}
-            <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+            {/* Main Product Image (Fluid constraints) */}
+            <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', width: '90%' }}>
               <img 
                 src={carouselSlides[currentSlide].image} 
                 alt={carouselSlides[currentSlide].title}
-                style={{ maxHeight: '100%', maxWidth: '90%', objectFit: 'contain', filter: 'drop-shadow(0px 4px 8px rgba(0,0,0,0.12))' }}
+                style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', filter: 'drop-shadow(0px 4px 8px rgba(0,0,0,0.12))' }}
               />
             </div>
             
             {/* Clear, Crisp Text Overlay Banner */}
             <div style={{
-              width: '85%',
-              maxWidth: '800px',
+              width: '90%',
+              maxWidth: '750px',
               background: '#ffffff',
-              padding: '15px 25px',
+              padding: '12px 20px',
               borderRadius: '8px',
               borderTop: '4px solid #007185',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               textAlign: 'center',
-              marginTop: '15px'
+              marginTop: '15px',
+              boxSizing: 'border-box'
             }}>
               <h2 style={{ 
                 margin: 0, 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 fontWeight: 'bold', 
                 color: '#111111',
                 whiteSpace: 'nowrap', 
@@ -138,9 +140,9 @@ function Home() {
                 {carouselSlides[currentSlide].title}
               </h2>
               <p style={{ 
-                margin: '5px 0 0 0', 
+                margin: '4px 0 0 0', 
                 color: '#b12704',
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: 'bold' 
               }}>
                 {carouselSlides[currentSlide].subtitle}
@@ -151,10 +153,10 @@ function Home() {
       )}
 
       {/* 2. DYNAMIC CONTENT CARD CONTAINERS */}
-      <div style={{ maxWidth: '1400px', margin: '30px auto 0 auto', padding: '0 20px', position: 'relative', zIndex: 5 }}>
+      <div style={{ maxWidth: '1400px', margin: '20px auto 0 auto', padding: '0 15px', position: 'relative', zIndex: 5, boxSizing: 'border-box' }}>
         
         {/* Search Bar Field */}
-        <div style={{ maxWidth: '100%', margin: '0 auto 25px auto', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', margin: '0 auto 25px auto', display: 'flex', justifyContent: 'center' }}>
           <div style={{ display: 'flex', width: '100%', maxWidth: '650px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
             <input 
               type="text" 
@@ -163,7 +165,7 @@ function Home() {
               onChange={handleSearchChange}
               style={{
                 width: '100%',
-                padding: '12px 20px',
+                padding: '12px 15px',
                 fontSize: '15px',
                 border: '1px solid #cccccc',
                 borderRight: 'none',
@@ -175,7 +177,7 @@ function Home() {
             />
             <div style={{
               background: '#febd69',
-              padding: '0 22px',
+              padding: '0 18px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -192,21 +194,21 @@ function Home() {
 
         <h3 style={{
           background: '#fff',
-          padding: '15px 25px',
+          padding: '15px 20px',
           margin: '0 0 20px 0',
           borderRadius: '4px',
-          fontSize: '22px',
+          fontSize: '20px',
           fontWeight: 'bold',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
           Featured Department Products
         </h3>
 
-        {/* Grid System maps through filteredProducts */}
+        {/* FIXED LOGIC: Auto-adjusting Grid boundaries mapping fluid items cleanly */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '20px'
+          gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', // 👈 230px allows rows to fit seamlessly on tiny phone widths
+          gap: '15px'
         }}>
           {filteredProducts.length > 0 ? (
             filteredProducts.map(product => (
@@ -215,7 +217,7 @@ function Home() {
                 onClick={() => navigate(`/products/${product._id || product.id}`)}
                 style={{
                   background: '#ffffff',
-                  padding: '20px',
+                  padding: '15px',
                   borderRadius: '4px',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                   display: 'flex',
@@ -232,7 +234,7 @@ function Home() {
                   e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                 }}
               >
-                <div style={{ width: '100%', height: '200px', background: '#f7f7f7', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', marginBottom: '15px', overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: '180px', background: '#f7f7f7', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', marginBottom: '15px', overflow: 'hidden' }}>
                   <img 
                     src={product.image || product.thumbnail} 
                     alt={product.title} 
@@ -242,14 +244,14 @@ function Home() {
 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
-                    <h4 style={{ margin: '0 0 5px 0', fontSize: '15px', fontWeight: 'bold', color: '#111', lineHeight: '1.4', height: '42px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    <h4 style={{ margin: '0 0 5px 0', fontSize: '14px', fontWeight: 'bold', color: '#111', lineHeight: '1.4', height: '40px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {product.title}
                     </h4>
                     <p style={{ margin: '0 0 10px 0', color: '#007185', fontSize: '13px' }}>★ ★ ★ ★ ☆</p>
                   </div>
 
                   <div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#B12704', marginBottom: '15px' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#B12704', marginBottom: '12px' }}>
                       ₹{product.price ? Number(product.price).toLocaleString('en-IN') : '0'}
                     </div>
                     
@@ -278,7 +280,7 @@ function Home() {
               background: '#ffffff',
               borderRadius: '4px',
               color: '#565959',
-              fontSize: '16px',
+              fontSize: '15px',
               boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
             }}>
               No matching products found for "{searchQuery}".
